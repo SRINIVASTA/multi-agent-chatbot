@@ -103,11 +103,14 @@ if user_input:
     st.markdown(f"**Bot:** {response}")
 
 # --- ngrok setup to expose app ---
-if ngrok_auth_token:
-    ngrok.set_auth_token(ngrok_auth_token)
-    ngrok.kill()
-    public_url = ngrok.connect(8501)
-    print(f"Streamlit app is running at: {public_url}")
-    st.write(f"[Live URL]({public_url})")
-else:
-    st.write("NGROK_AUTH_TOKEN not found in environment variables, please set it to expose the app publicly.")
+if __name__ == "__main__":
+    if ngrok_auth_token:
+        ngrok.set_auth_token(ngrok_auth_token)
+        try:
+            ngrok.kill()  # Kill any running tunnels to avoid conflicts
+        except Exception:
+            pass
+        public_url = ngrok.connect(8501)
+        print(f"✅ Streamlit app is running at: {public_url}")
+    else:
+        print("⚠️ NGROK_AUTH_TOKEN not found. App will not be exposed publicly.")
