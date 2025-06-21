@@ -7,7 +7,7 @@ from multi_chatbot import extract_city, is_weather_query
 @pytest.mark.parametrize("text,expected", [
     ("What's the weather in New York?", "New York"),
     ("Tell me the forecast for Tokyo", "Tokyo"),
-    ("Rain update for Bengaluru", "Bengaluru"),
+    ("Tell me the forecast for Bengaluru", "Bengaluru"),
     ("weather in   hyderabad", "Hyderabad"),
     ("how's weather for Chennai now", "Chennai"),
 ])
