@@ -27,15 +27,19 @@ def is_weather_query(text):
     pattern = re.compile(r"\b(weather|temperature|forecast|rain|snow|sunny|cloudy)\b", re.IGNORECASE)
     return bool(pattern.search(text))
 
-# --- City extraction ---
+# --- City extraction (updated) ---
 def extract_city(text):
     noise_words = {"today", "now", "please", "right", "currently", "tomorrow", "this", "week", "tonight"}
-    match = re.search(r"(?:in|for)\s+([a-zA-Z\s]+)", text, re.IGNORECASE)
-    if match:
-        city = match.group(1).strip()
+
+    # Find all occurrences of 'in' or 'for' followed by city-like words
+    matches = re.findall(r"(?:in|for)\s+([a-zA-Z\s]+)", text, re.IGNORECASE)
+
+    if matches:
+        city = matches[-1].strip()  # take the last match, usually the city name
     else:
         tokens = text.strip().split()
         city = tokens[-1]
+
     city = re.sub(r"[?.!,]*$", "", city)
     words = city.lower().split()
     filtered = [word for word in words if word not in noise_words]
@@ -103,14 +107,13 @@ if user_input:
     st.markdown(f"**Bot:** {response}")
 
 # --- ngrok setup to expose app ---
+
 if __name__ == "__main__":
     if ngrok_auth_token:
         ngrok.set_auth_token(ngrok_auth_token)
-        try:
-            ngrok.kill()  # Kill any running tunnels to avoid conflicts
-        except Exception:
-            pass
+        ngrok.kill()
         public_url = ngrok.connect(8501)
-        print(f"✅ Streamlit app is running at: {public_url}")
+        print(f"Streamlit app is running at: {public_url}")
+        st.write(f"[Live URL]({public_url})")
     else:
-        print("⚠️ NGROK_AUTH_TOKEN not found. App will not be exposed publicly.")
+        st.write("NGROK_AUTH_TOKEN not found in environment variables, please set it to expose the app publicly.")
