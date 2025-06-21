@@ -1,2 +1,9 @@
-# multi-agent-chatbot
-Multi-agent chatbot using Streamlit, Google Gemini AI, OpenWeather API, and ngrok for public access.
+# Multi-Agent Chatbot with Streamlit + ngrok + Google Gemini
+
+## Setup
+
+1. Clone the repo
+
+```bash
+git clone https://github.com/SRINIVASTA/multi-agent-chatbot.git
+cd multi-agent-chatbot
