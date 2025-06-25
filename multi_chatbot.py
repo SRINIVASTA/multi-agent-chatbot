@@ -4,12 +4,12 @@ import requests
 from datetime import datetime
 import google.generativeai as genai
 import streamlit as st
-from pyngrok import ngrok
+# from pyngrok import ngrok  # ❌ Not needed on Streamlit Cloud
 
 # --- Load API keys from environment variables ---
 openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
 google_api_key = os.getenv('GOOGLE_API_KEY')
-ngrok_auth_token = os.getenv('NGROK_AUTH_TOKEN')
+# ngrok_auth_token = os.getenv('NGROK_AUTH_TOKEN')  # ❌ Not needed on Streamlit Cloud
 
 # --- Configure Gemini AI ---
 genai.configure(api_key=google_api_key)
@@ -31,11 +31,9 @@ def is_weather_query(text):
 def extract_city(text):
     noise_words = {"today", "now", "please", "right", "currently", "tomorrow", "this", "week", "tonight"}
 
-    # Find all occurrences of 'in' or 'for' followed by city-like words
     matches = re.findall(r"(?:in|for)\s+([a-zA-Z\s]+)", text, re.IGNORECASE)
-
     if matches:
-        city = matches[-1].strip()  # take the last match, usually the city name
+        city = matches[-1].strip()
     else:
         tokens = text.strip().split()
         city = tokens[-1]
@@ -106,14 +104,13 @@ if user_input:
     response = chatbot(user_input, debug=debug_mode)
     st.markdown(f"**Bot:** {response}")
 
-# --- ngrok setup to expose app ---
-
-if __name__ == "__main__":
-    if ngrok_auth_token:
-        ngrok.set_auth_token(ngrok_auth_token)
-        ngrok.kill()
-        public_url = ngrok.connect(8501)
-        print(f"Streamlit app is running at: {public_url}")
-        st.write(f"[Live URL]({public_url})")
-    else:
-        st.write("NGROK_AUTH_TOKEN not found in environment variables, please set it to expose the app publicly.")
+# --- ngrok setup (not needed on Streamlit Cloud) ---
+# if __name__ == "__main__":
+#     if ngrok_auth_token:
+#         ngrok.set_auth_token(ngrok_auth_token)
+#         ngrok.kill()
+#         public_url = ngrok.connect(8501)
+#         print(f"Streamlit app is running at: {public_url}")
+#         st.write(f"[Live URL]({public_url})")
+#     else:
+#         st.write("NGROK_AUTH_TOKEN not found in environment variables, please set it to expose the app publicly.")
