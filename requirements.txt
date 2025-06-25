@@ -1,5 +1,5 @@
 streamlit
 requests
-pyngrok
-pytest
+# pyngrok  # Uncomment if you want to run tests locally
+# pytest  # Uncomment if you want to run tests locally
 google-generativeai
