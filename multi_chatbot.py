@@ -21,11 +21,13 @@ if not google_api_key or not openweather_api_key:
     st.text_input("Google API Key", key="input_google_key", type="password")
     st.text_input("OpenWeather API Key", key="input_openweather_key", type="password")
 
-    if st.button("Save API Keys"):
+    def save_and_reload():
         save_api_keys()
-        st.experimental_rerun()  # Refresh to load keys
+        st.experimental_rerun()
 
-    st.stop()  # Stop running the rest until keys are provided
+    st.button("Save API Keys", on_click=save_and_reload)
+
+    st.stop()  # Stop further execution until keys are set
 
 # --- Now that keys are set, configure Gemini AI ---
 genai.configure(api_key=google_api_key)
