@@ -1,21 +1,41 @@
-import os
 import re
 import requests
 from datetime import datetime
 import google.generativeai as genai
 import streamlit as st
-# from pyngrok import ngrok  # ❌ Not needed on Streamlit Cloud
 
-# --- Load API keys from environment variables ---
-openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
-google_api_key = os.getenv('GOOGLE_API_KEY')
-# ngrok_auth_token = os.getenv('NGROK_AUTH_TOKEN')  # ❌ Not needed on Streamlit Cloud
+# --- Helper: Save API keys in session state ---
+def save_api_keys():
+    st.session_state.google_api_key = st.session_state.get("input_google_key", "").strip()
+    st.session_state.openweather_api_key = st.session_state.get("input_openweather_key", "").strip()
 
-# --- Configure Gemini AI ---
+# --- Check if keys are in session state ---
+google_api_key = st.session_state.get("google_api_key")
+openweather_api_key = st.session_state.get("openweather_api_key")
+
+# --- If keys not set, show input forms ---
+if not google_api_key or not openweather_api_key:
+    st.title("🔑 Enter Your API Keys")
+    st.info("Please enter your Google API Key and OpenWeather API Key to continue.")
+
+    st.text_input("Google API Key", key="input_google_key", type="password")
+    st.text_input("OpenWeather API Key", key="input_openweather_key", type="password")
+
+    if st.button("Save API Keys"):
+        save_api_keys()
+        st.experimental_rerun()  # Refresh to load keys
+
+    st.stop()  # Stop running the rest until keys are provided
+
+# --- Now that keys are set, configure Gemini AI ---
 genai.configure(api_key=google_api_key)
 model = genai.GenerativeModel("gemini-2.0-flash-exp")
 
-# --- Intent detectors ---
+# --- UI Title and Instructions ---
+st.title("🤖 Weather + AI Bot")
+st.markdown("Ask about **weather**, **dates**, or **general questions**. Powered by OpenWeatherMap & Gemini AI.")
+
+# --- Intent Detectors ---
 def is_date_query(text):
     pattern = re.compile(
         r"\b(what(?:'s| is)?\s+(today|date|day)|current\s+(date|day)|today['s]*\s+date|what\s+time\s+is\s+it)\b",
@@ -27,7 +47,7 @@ def is_weather_query(text):
     pattern = re.compile(r"\b(weather|temperature|forecast|rain|snow|sunny|cloudy)\b", re.IGNORECASE)
     return bool(pattern.search(text))
 
-# --- City extraction (updated) ---
+# --- City Extractor ---
 def extract_city(text):
     noise_words = {"today", "now", "please", "right", "currently", "tomorrow", "this", "week", "tonight"}
 
@@ -45,7 +65,7 @@ def extract_city(text):
         return None
     return ' '.join(filtered).title()
 
-# --- Weather agent ---
+# --- Weather Agent ---
 def get_weather(city):
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={openweather_api_key}&units=metric"
     response = requests.get(url)
@@ -53,17 +73,17 @@ def get_weather(city):
         data = response.json()
         temp = data['main']['temp']
         desc = data['weather'][0]['description']
-        return f"The weather in {city} is {desc} with a temperature of {temp:.2f}°C."
+        return f"The weather in {city} is **{desc}** with a temperature of **{temp:.1f}°C**."
     else:
         st.write(f"[Debug] Weather API error: {response.status_code} | {response.json()}")
-        return f"Sorry, couldn't fetch weather for {city}."
+        return f"❌ Sorry, couldn't fetch weather for **{city}**. Please check the city name."
 
-# --- Date agent ---
+# --- Date Agent ---
 def get_current_date():
     now = datetime.now()
-    return f"Today is {now.strftime('%A, %B %d, %Y')}."
+    return f"📅 Today is **{now.strftime('%A, %B %d, %Y')}**."
 
-# --- General AI agent ---
+# --- Gemini AI Agent ---
 def query_google_ai(prompt):
     context_prompt = f"""
 You are a helpful assistant answering general knowledge questions. Assume today's date is {datetime.now().strftime('%A, %B %d, %Y')}.
@@ -78,39 +98,25 @@ User asked: "{prompt}"
 def chatbot(user_input, debug=False):
     if is_date_query(user_input):
         if debug:
-            st.write("[Debug] Routed to Date Agent")
+            st.write("🛠️ [Debug] Routed to Date Agent")
         return get_current_date()
     elif is_weather_query(user_input):
         if debug:
-            st.write("[Debug] Routed to Weather Agent")
+            st.write("🛠️ [Debug] Routed to Weather Agent")
         city = extract_city(user_input)
         if city:
             return get_weather(city)
         else:
-            return "Please specify a city for the weather query."
+            return "🌍 Please specify a **city** for the weather."
     else:
         if debug:
-            st.write("[Debug] Routed to Gemini AI Agent")
+            st.write("🛠️ [Debug] Routed to Gemini AI Agent")
         return query_google_ai(user_input)
 
-# --- Streamlit UI ---
-st.title("🤖 Weather + AI Bot")
-st.markdown("Ask about weather, dates, travel plans, or general AI questions.")
-
-debug_mode = st.checkbox("Show debug info")
-user_input = st.text_input("Enter your message:")
+# --- Main Chat UI ---
+debug_mode = st.checkbox("🪛 Show debug info")
+user_input = st.text_input("💬 Enter your message:")
 
 if user_input:
     response = chatbot(user_input, debug=debug_mode)
-    st.markdown(f"**Bot:** {response}")
-
-# --- ngrok setup (not needed on Streamlit Cloud) ---
-# if __name__ == "__main__":
-#     if ngrok_auth_token:
-#         ngrok.set_auth_token(ngrok_auth_token)
-#         ngrok.kill()
-#         public_url = ngrok.connect(8501)
-#         print(f"Streamlit app is running at: {public_url}")
-#         st.write(f"[Live URL]({public_url})")
-#     else:
-#         st.write("NGROK_AUTH_TOKEN not found in environment variables, please set it to expose the app publicly.")
+    st.markdown(f"**🤖 Bot:** {response}")
