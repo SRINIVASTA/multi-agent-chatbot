@@ -4,36 +4,37 @@ from datetime import datetime
 import google.generativeai as genai
 import streamlit as st
 
-# --- Helper: Save API keys in session state ---
-def save_api_keys():
-    st.session_state.google_api_key = st.session_state.get("input_google_key", "").strip()
-    st.session_state.openweather_api_key = st.session_state.get("input_openweather_key", "").strip()
+# --- Initialize session state variables ---
+if 'google_api_key' not in st.session_state:
+    st.session_state.google_api_key = ""
+if 'openweather_api_key' not in st.session_state:
+    st.session_state.openweather_api_key = ""
+if 'keys_saved' not in st.session_state:
+    st.session_state.keys_saved = False
 
-# --- Check if keys are in session state ---
-google_api_key = st.session_state.get("google_api_key")
-openweather_api_key = st.session_state.get("openweather_api_key")
-
-# --- If keys not set, show input forms ---
-if not google_api_key or not openweather_api_key:
+# --- API Key input form ---
+if not st.session_state.keys_saved or not st.session_state.google_api_key or not st.session_state.openweather_api_key:
     st.title("🔑 Enter Your API Keys")
     st.info("Please enter your Google API Key and OpenWeather API Key to continue.")
 
-    st.text_input("Google API Key", key="input_google_key", type="password")
-    st.text_input("OpenWeather API Key", key="input_openweather_key", type="password")
+    # Text inputs bound to session state
+    st.session_state.google_api_key = st.text_input("Google API Key", value=st.session_state.google_api_key, type="password")
+    st.session_state.openweather_api_key = st.text_input("OpenWeather API Key", value=st.session_state.openweather_api_key, type="password")
 
-    def save_and_reload():
-        save_api_keys()
-        st.experimental_rerun()
+    if st.button("Save API Keys"):
+        if st.session_state.google_api_key.strip() and st.session_state.openweather_api_key.strip():
+            st.session_state.keys_saved = True
+            st.experimental_rerun()  # Safe rerun after saving keys
+        else:
+            st.warning("⚠️ Please enter both API keys.")
 
-    st.button("Save API Keys", on_click=save_and_reload)
-
-    st.stop()  # Stop further execution until keys are set
+    st.stop()  # Stop execution until keys are saved
 
 # --- Now that keys are set, configure Gemini AI ---
-genai.configure(api_key=google_api_key)
+genai.configure(api_key=st.session_state.google_api_key)
 model = genai.GenerativeModel("gemini-2.0-flash-exp")
 
-# --- UI Title and Instructions ---
+# --- App UI ---
 st.title("🤖 Weather + AI Bot")
 st.markdown("Ask about **weather**, **dates**, or **general questions**. Powered by OpenWeatherMap & Gemini AI.")
 
@@ -49,7 +50,7 @@ def is_weather_query(text):
     pattern = re.compile(r"\b(weather|temperature|forecast|rain|snow|sunny|cloudy)\b", re.IGNORECASE)
     return bool(pattern.search(text))
 
-# --- City Extractor ---
+# --- City extractor ---
 def extract_city(text):
     noise_words = {"today", "now", "please", "right", "currently", "tomorrow", "this", "week", "tonight"}
 
@@ -67,9 +68,9 @@ def extract_city(text):
         return None
     return ' '.join(filtered).title()
 
-# --- Weather Agent ---
+# --- Weather agent ---
 def get_weather(city):
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={openweather_api_key}&units=metric"
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={st.session_state.openweather_api_key}&units=metric"
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
@@ -80,12 +81,12 @@ def get_weather(city):
         st.write(f"[Debug] Weather API error: {response.status_code} | {response.json()}")
         return f"❌ Sorry, couldn't fetch weather for **{city}**. Please check the city name."
 
-# --- Date Agent ---
+# --- Date agent ---
 def get_current_date():
     now = datetime.now()
     return f"📅 Today is **{now.strftime('%A, %B %d, %Y')}**."
 
-# --- Gemini AI Agent ---
+# --- Gemini AI agent ---
 def query_google_ai(prompt):
     context_prompt = f"""
 You are a helpful assistant answering general knowledge questions. Assume today's date is {datetime.now().strftime('%A, %B %d, %Y')}.
@@ -115,7 +116,7 @@ def chatbot(user_input, debug=False):
             st.write("🛠️ [Debug] Routed to Gemini AI Agent")
         return query_google_ai(user_input)
 
-# --- Main Chat UI ---
+# --- Main chat UI ---
 debug_mode = st.checkbox("🪛 Show debug info")
 user_input = st.text_input("💬 Enter your message:")
 
