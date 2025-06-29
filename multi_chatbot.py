@@ -17,20 +17,23 @@ if not st.session_state.keys_saved or not st.session_state.google_api_key or not
     st.title("🔑 Enter Your API Keys")
     st.info("Please enter your Google API Key and OpenWeather API Key to continue.")
 
-    # Text inputs bound to session state
-    st.session_state.google_api_key = st.text_input("Google API Key", value=st.session_state.google_api_key, type="password")
-    st.session_state.openweather_api_key = st.text_input("OpenWeather API Key", value=st.session_state.openweather_api_key, type="password")
+    st.session_state.google_api_key = st.text_input(
+        "Google API Key", value=st.session_state.google_api_key, type="password"
+    )
+    st.session_state.openweather_api_key = st.text_input(
+        "OpenWeather API Key", value=st.session_state.openweather_api_key, type="password"
+    )
 
     if st.button("Save API Keys"):
         if st.session_state.google_api_key.strip() and st.session_state.openweather_api_key.strip():
             st.session_state.keys_saved = True
-            st.experimental_rerun()  # Safe rerun after saving keys
+            st.success("API keys saved! You can now use the app below.")
         else:
             st.warning("⚠️ Please enter both API keys.")
 
-    st.stop()  # Stop execution until keys are saved
+    st.stop()  # Halt execution until keys are saved
 
-# --- Now that keys are set, configure Gemini AI ---
+# --- Configure Gemini AI ---
 genai.configure(api_key=st.session_state.google_api_key)
 model = genai.GenerativeModel("gemini-2.0-flash-exp")
 
