@@ -18,16 +18,8 @@ if not st.session_state.keys_saved or not st.session_state.google_api_key or not
     st.info("Please enter your Google API Key and OpenWeather API Key to continue.")
 
     with st.form("key_form", clear_on_submit=False):
-        google_key_input = st.text_input(
-            "Google API Key",
-            value=st.session_state.google_api_key,
-            type="password"
-        )
-        openweather_key_input = st.text_input(
-            "OpenWeather API Key",
-            value=st.session_state.openweather_api_key,
-            type="password"
-        )
+        google_key_input = st.text_input("Google API Key", type="password")
+        openweather_key_input = st.text_input("OpenWeather API Key", type="password")
         submitted = st.form_submit_button("Save API Keys")
 
         if submitted:
@@ -35,22 +27,25 @@ if not st.session_state.keys_saved or not st.session_state.google_api_key or not
                 st.session_state.google_api_key = google_key_input.strip()
                 st.session_state.openweather_api_key = openweather_key_input.strip()
                 st.session_state.keys_saved = True
-                st.success("✅ API keys saved!")
-                st.toast("Reloading app...")
-
-                # ✅ Trigger rerun exactly once to show chatbot UI
-                st.experimental_rerun()
+                st.session_state.just_saved_keys = True  # ✅ trigger rerun
+                st.success("✅ API keys saved! Initializing app...")
+                st.stop()
             else:
                 st.warning("⚠️ Please enter both API keys.")
-    st.stop()
+                st.stop()
+
+# --- One-time rerun to activate chatbot UI ---
+if st.session_state.get("just_saved_keys", False):
+    st.session_state.just_saved_keys = False
+    st.experimental_rerun()
 
 # --- Configure Gemini AI ---
 genai.configure(api_key=st.session_state.google_api_key)
 model = genai.GenerativeModel("gemini-2.0-flash-exp")
 
-# --- Main app UI ---
-st.title("🤖 Weather + AI Bot")
-st.markdown("Ask about **weather**, **dates**, or **general questions**. Powered by OpenWeatherMap & Gemini AI.")
+# --- App UI ---
+st.title("🤖 Weather + AI Chatbot")
+st.markdown("Ask about **weather**, **dates**, or general knowledge. Powered by OpenWeatherMap & Gemini AI.")
 
 # --- Intent Detectors ---
 def is_date_query(text):
@@ -67,14 +62,12 @@ def is_weather_query(text):
 # --- City extractor ---
 def extract_city(text):
     noise_words = {"today", "now", "please", "right", "currently", "tomorrow", "this", "week", "tonight"}
-
     matches = re.findall(r"(?:in|for)\s+([a-zA-Z\s]+)", text, re.IGNORECASE)
     if matches:
         city = matches[-1].strip()
     else:
         tokens = text.strip().split()
         city = tokens[-1]
-
     city = re.sub(r"[?.!,]*$", "", city)
     words = city.lower().split()
     filtered = [word for word in words if word not in noise_words]
@@ -93,7 +86,7 @@ def get_weather(city):
         return f"The weather in {city} is **{desc}** with a temperature of **{temp:.1f}°C**."
     else:
         st.write(f"[Debug] Weather API error: {response.status_code} | {response.json()}")
-        return f"❌ Sorry, couldn't fetch weather for **{city}**. Please check the city name."
+        return f"❌ Sorry, couldn't fetch weather for **{city}**."
 
 # --- Date agent ---
 def get_current_date():
@@ -130,9 +123,9 @@ def chatbot(user_input, debug=False):
             st.write("🛠️ [Debug] Routed to Gemini AI Agent")
         return query_google_ai(user_input)
 
-# --- Main chat UI ---
-debug_mode = st.checkbox("🪛 Show debug info")
-user_input = st.text_input("💬 Enter your message:")
+# --- Main chatbot UI ---
+debug_mode = st.checkbox("🧪 Show debug info")
+user_input = st.text_input("💬 Ask something:")
 
 if user_input:
     response = chatbot(user_input, debug=debug_mode)
