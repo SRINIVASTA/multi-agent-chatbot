@@ -35,11 +35,14 @@ if not st.session_state.keys_saved or not st.session_state.google_api_key or not
                 st.session_state.google_api_key = google_key_input.strip()
                 st.session_state.openweather_api_key = openweather_key_input.strip()
                 st.session_state.keys_saved = True
-                st.success("API keys saved! You can now use the app below.")
+                st.success("✅ API keys saved!")
+                st.toast("Reloading app...")
+
+                # ✅ Trigger rerun exactly once to show chatbot UI
+                st.experimental_rerun()
             else:
                 st.warning("⚠️ Please enter both API keys.")
-
-    st.stop()  # Stop here until keys are saved
+    st.stop()
 
 # --- Configure Gemini AI ---
 genai.configure(api_key=st.session_state.google_api_key)
