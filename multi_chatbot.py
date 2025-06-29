@@ -31,13 +31,13 @@ if not st.session_state.keys_saved or not st.session_state.google_api_key or not
         else:
             st.warning("⚠️ Please enter both API keys.")
 
-    st.stop()  # Halt execution until keys are saved
+    st.stop()  # Halt here until keys are saved
 
 # --- Configure Gemini AI ---
 genai.configure(api_key=st.session_state.google_api_key)
 model = genai.GenerativeModel("gemini-2.0-flash-exp")
 
-# --- App UI ---
+# --- Main app UI ---
 st.title("🤖 Weather + AI Bot")
 st.markdown("Ask about **weather**, **dates**, or **general questions**. Powered by OpenWeatherMap & Gemini AI.")
 
