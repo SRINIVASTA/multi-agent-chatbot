@@ -7,11 +7,16 @@ import streamlit as st
 # --- Configure page ---
 st.set_page_config(page_title="SRINIVASTA Multi-Agent Chatbot", page_icon="🤖")
 
-# --- Initial Greeting (always shown) ---
-st.toast("🎉 Welcome to SRINIVASTA Multi-Agent Chatbot!", icon="👋")
-st.markdown("### 👋 Hello and welcome!")
-st.markdown("This is a **multi-agent chatbot** powered by **Google Gemini AI** and **OpenWeather API**.")
-st.markdown("You'll be able to ask about **weather**, **dates**, and general knowledge.")
+# --- Persistent greeting in main area ---
+def show_greeting():
+    st.markdown("# 👋 Welcome to SRINIVASTA Multi-Agent Chatbot!")
+    st.markdown(
+        "This is a **multi-agent chatbot** powered by **Google Gemini AI** and **OpenWeather API**. "
+        "You can ask about **weather**, **dates**, or general knowledge."
+    )
+    st.markdown("---")
+
+show_greeting()
 
 # --- Initialize session state ---
 if 'google_api_key' not in st.session_state:
@@ -21,14 +26,14 @@ if 'openweather_api_key' not in st.session_state:
 if 'keys_saved' not in st.session_state:
     st.session_state.keys_saved = False
 
-# --- API Key Entry ---
-if not st.session_state.keys_saved:
-    st.subheader("🔑 Enter Your API Keys")
-    st.info("Please enter your Google API Key and OpenWeather API Key to continue.")
+# --- Sidebar for API keys and examples ---
+def api_key_sidebar():
+    st.sidebar.header("🔑 Enter Your API Keys")
+    st.sidebar.info("Provide your Google API Key and OpenWeather API Key.")
 
-    with st.form("api_key_form"):
-        google_key_input = st.text_input("Google API Key", type="password")
-        openweather_key_input = st.text_input("OpenWeather API Key", type="password")
+    with st.sidebar.form("api_key_form"):
+        google_key_input = st.text_input("Google API Key", type="password", value=st.session_state.google_api_key)
+        openweather_key_input = st.text_input("OpenWeather API Key", type="password", value=st.session_state.openweather_api_key)
         submitted = st.form_submit_button("Save Keys")
 
         if submitted:
@@ -36,28 +41,27 @@ if not st.session_state.keys_saved:
                 st.session_state.google_api_key = google_key_input.strip()
                 st.session_state.openweather_api_key = openweather_key_input.strip()
                 st.session_state.keys_saved = True
-                st.success("✅ Keys saved! Scroll down to use the chatbot.")
+                st.sidebar.success("✅ Keys saved! Close sidebar to start chatting.")
             else:
-                st.error("❌ Please enter both API keys.")
+                st.sidebar.error("❌ Please enter both API keys.")
 
-    # --- Example Questions Below API Keys ---
-    st.markdown("---")
-    st.markdown("### 💡 Example Questions You Can Ask:")
-    st.markdown("""
-    - 🌤️ **What's the weather in Paris today?**  
-    - 🤖 **Explain how transformers work in AI**  
-    - 🧳 **Plan a 3-day trip to Visakhapatnam with budget tips**  
-    - 🐍 **Generate a Python script to scrape a website**  
-    """)
+    if not st.session_state.keys_saved:
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("### 💡 Example Questions You Can Ask:")
+        st.sidebar.markdown("""
+        - 🌤️ **What's the weather in Paris today?**  
+        - 🤖 **Explain how transformers work in AI**  
+        - 🧳 **Plan a 3-day trip to Visakhapatnam with budget tips**  
+        - 🐍 **Generate a Python script to scrape a website**  
+        """)
 
-# --- Only load chatbot if keys are saved ---
+api_key_sidebar()
+
+# --- Load chatbot if keys saved ---
 if st.session_state.keys_saved:
-
-    # --- Configure Gemini AI ---
     genai.configure(api_key=st.session_state.google_api_key)
     model = genai.GenerativeModel("gemini-2.0-flash-exp")
 
-    # --- UI ---
     st.title("🤖 Weather + AI Chatbot")
     st.markdown("Ask about **weather**, **dates**, or general knowledge. Powered by OpenWeatherMap & Gemini AI.")
 
@@ -130,7 +134,6 @@ User asked: "{prompt}"
                 st.write("🛠️ [Debug] Routed to Gemini AI Agent")
             return query_google_ai(user_input)
 
-    # --- Chatbot UI ---
     debug_mode = st.checkbox("🧪 Show debug info")
     user_input = st.text_input("💬 Ask something:")
 
