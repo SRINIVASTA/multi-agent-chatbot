@@ -32,7 +32,7 @@ def api_key_sidebar():
 
     if not st.session_state.keys_saved:
         st.sidebar.info(
-            "Don't have API keys yet? "
+            "If you Don't have API keys yet? "
             "[Create Google API Key](https://console.cloud.google.com/apis/credentials) and "
             "[Get OpenWeather API Key](https://home.openweathermap.org/api_keys)."
         )
