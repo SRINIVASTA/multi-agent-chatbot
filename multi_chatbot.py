@@ -5,10 +5,10 @@ import google.generativeai as genai
 import streamlit as st
 
 # --- Configure page ---
-st.set_page_config(page_title="Tanakala Multi-Agent Chatbot", page_icon="🤖")
+st.set_page_config(page_title="SRINIVASTA Multi-Agent Chatbot", page_icon="🤖")
 
 # --- Initial Greeting (always shown) ---
-st.toast("🎉 Welcome to Tanakala Multi-Agent Chatbot!", icon="👋")
+st.toast("🎉 Welcome to SRINIVASTA Multi-Agent Chatbot!", icon="👋")
 st.markdown("### 👋 Hello and welcome!")
 st.markdown("This is a **multi-agent chatbot** powered by **Google Gemini AI** and **OpenWeather API**.")
 st.markdown("You'll be able to ask about **weather**, **dates**, and general knowledge.")
@@ -39,6 +39,16 @@ if not st.session_state.keys_saved:
                 st.success("✅ Keys saved! Scroll down to use the chatbot.")
             else:
                 st.error("❌ Please enter both API keys.")
+
+    # --- Example Questions Below API Keys ---
+    st.markdown("---")
+    st.markdown("### 💡 Example Questions You Can Ask:")
+    st.markdown("""
+    - 🌤️ **What's the weather in Paris today?**  
+    - 🤖 **Explain how transformers work in AI**  
+    - 🧳 **Plan a 3-day trip to Visakhapatnam with budget tips**  
+    - 🐍 **Generate a Python script to scrape a website**  
+    """)
 
 # --- Only load chatbot if keys are saved ---
 if st.session_state.keys_saved:
