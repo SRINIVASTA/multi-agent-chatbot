@@ -4,6 +4,15 @@ from datetime import datetime
 import google.generativeai as genai
 import streamlit as st
 
+# --- Configure page ---
+st.set_page_config(page_title="Tanakala Multi-Agent Chatbot", page_icon="🤖")
+
+# --- Initial Greeting (always shown) ---
+st.toast("🎉 Welcome to Tanakala Multi-Agent Chatbot!", icon="👋")
+st.markdown("### 👋 Hello and welcome!")
+st.markdown("This is a **multi-agent chatbot** powered by **Google Gemini AI** and **OpenWeather API**.")
+st.markdown("You'll be able to ask about **weather**, **dates**, and general knowledge.")
+
 # --- Initialize session state ---
 if 'google_api_key' not in st.session_state:
     st.session_state.google_api_key = ""
@@ -14,8 +23,7 @@ if 'keys_saved' not in st.session_state:
 
 # --- API Key Entry ---
 if not st.session_state.keys_saved:
-    st.set_page_config(page_title="SRINIVASTA Multi-Agent Chatbot", page_icon="🤖")
-    st.title("🔑 Enter Your API Keys")
+    st.subheader("🔑 Enter Your API Keys")
     st.info("Please enter your Google API Key and OpenWeather API Key to continue.")
 
     with st.form("api_key_form"):
@@ -34,11 +42,6 @@ if not st.session_state.keys_saved:
 
 # --- Only load chatbot if keys are saved ---
 if st.session_state.keys_saved:
-
-    # --- Show greeting on app open ---
-    st.set_page_config(page_title="SRINIVASTA Multi-Agent Chatbot", page_icon="🤖")
-    st.toast("🎉 Welcome to SRINIVASTA Multi-Agent Chatbot!", icon="👋")
-    st.markdown("### 👋 Hello and welcome! This chatbot combines the power of Google Gemini AI and OpenWeather.")
 
     # --- Configure Gemini AI ---
     genai.configure(api_key=st.session_state.google_api_key)
