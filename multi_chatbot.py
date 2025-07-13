@@ -45,15 +45,15 @@ def api_key_sidebar():
             else:
                 st.sidebar.error("❌ Please enter both API keys.")
 
-    if not st.session_state.keys_saved:
-        st.sidebar.markdown("---")
-        st.sidebar.markdown("### 💡 Example Questions You Can Ask:")
-        st.sidebar.markdown("""
-        - 🌤️ **What's the weather in Paris today?**  
-        - 🤖 **Explain how transformers work in AI**  
-        - 🧳 **Plan a 3-day trip to Visakhapatnam with budget tips**  
-        - 🐍 **Generate a Python script to scrape a website**  
-        """)
+    # Always show example questions below the form
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 💡 Example Questions You Can Ask:")
+    st.sidebar.markdown("""
+    - 🌤️ **What's the weather in Paris today?**  
+    - 🤖 **Explain how transformers work in AI**  
+    - 🧳 **Plan a 3-day trip to Visakhapatnam with budget tips**  
+    - 🐍 **Generate a Python script to scrape a website**  
+    """)
 
 api_key_sidebar()
 
