@@ -5,11 +5,11 @@ import google.generativeai as genai
 import streamlit as st
 
 # --- Configure page ---
-st.set_page_config(page_title="Tanakala Multi-Agent Chatbot", page_icon="🤖")
+st.set_page_config(page_title="SRINIVASTA Multi-Agent Chatbot", page_icon="🤖")
 
 # --- Persistent greeting in main area ---
 def show_greeting():
-    st.markdown("# 👋 Welcome to Tanakala Multi-Agent Chatbot!")
+    st.markdown("# 👋 Welcome to SRINIVASTA Multi-Agent Chatbot!")
     st.markdown(
         "This is a **multi-agent chatbot** powered by **Google Gemini AI** and **OpenWeather API**. "
         "You can ask about **weather**, **dates**, or general knowledge."
@@ -29,6 +29,14 @@ if 'keys_saved' not in st.session_state:
 # --- Sidebar for API keys and examples ---
 def api_key_sidebar():
     st.sidebar.header("🔑 Enter Your API Keys")
+
+    if not st.session_state.keys_saved:
+        st.sidebar.info(
+            "Don't have API keys yet? "
+            "[Create Google API Key](https://console.cloud.google.com/apis/credentials) and "
+            "[Get OpenWeather API Key](https://home.openweathermap.org/api_keys)."
+        )
+
     st.sidebar.info("Provide your Google API Key and OpenWeather API Key.")
 
     with st.sidebar.form("api_key_form"):
