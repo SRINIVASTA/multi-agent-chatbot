@@ -5,11 +5,11 @@ import google.generativeai as genai
 import streamlit as st
 
 # --- Configure page ---
-st.set_page_config(page_title="SRINIVASTA Multi-Agent Chatbot", page_icon="🤖")
+st.set_page_config(page_title="Tanakala Multi-Agent Chatbot", page_icon="🤖")
 
 # --- Persistent greeting in main area ---
 def show_greeting():
-    st.markdown("# 👋 Welcome to SRINIVASTA Multi-Agent Chatbot!")
+    st.markdown("# 👋 Welcome to Tanakala Multi-Agent Chatbot!")
     st.markdown(
         "This is a **multi-agent chatbot** powered by **Google Gemini AI** and **OpenWeather API**. "
         "You can ask about **weather**, **dates**, or general knowledge."
